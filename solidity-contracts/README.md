@@ -64,3 +64,18 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+1. Write an ERC20. It should contain:
+   - balance of users ✅
+   - allowance of users ✅
+   - approve function to set allowance of users ✅
+   - Transfer function ✅ 
+   - a function to pull Tokens from a user if the caller has enough of an allowance ✅ 
+   - a mint function to set the balance of a user ✅ 
+
+2. Create the ERC20 in Setup: 
+ - test Transfer from one user to another ✅ 
+ - test for approving transfer ✅ 
+ - test for one user pull funds from another user ✅ 
+ - test minting for a user ✅ 
+ - in all Tests make sure that the balances and allowances match the expected value ✅
