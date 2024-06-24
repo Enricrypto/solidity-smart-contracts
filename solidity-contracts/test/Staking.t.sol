@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+import "forge-std/Test.sol";
+import "../src/DepositToken.sol";
+import "../src/Staking.sol";
+
+contract StakingTest is Test {
+    DepositToken depositToken;
+    DepositToken rewardToken;
+    Staking staking;
+
+    address user = address(1);
+
+    function setUp() public {
+        depositToken = new DepositToken("MyToken", "MTK", 18, 1000);
+        rewardToken = new DepositToken("MyRewardToken", "MTK", 18, 1000);
+        staking = new Staking(address(depositToken), address(rewardToken));
+
+        // The depositToken mints 1000 tokens to user
+        depositToken.mint(user, 1000);
+        vm.prank(user);
+        // The depositToken contract approves staking to spend up to 1000 tokens on behalf of user.
+        depositToken.approve(address(staking), 500);
+    }
+
+    function testDeposit() public {
+        vm.prank(user);
+        // user deposits 100 tokens into the staking contract
+        bool success = staking.depositVault(100);
+        assertTrue(success);
+        // destructuring: the variables inside the parenthesis should be assigned values from
+        // the return values of staking.userInfo(user) in the order they are declared.
+        (
+            uint256 shares,
+            uint256 lastClaimTime,
+            uint256 pendingRewards
+        ) = staking.userInfo(user);
+        assertEq(shares, 100);
+        assertEq(lastClaimTime, block.timestamp);
+        assertEq(pendingRewards, 0);
+    }
+
+    function testWithdraw() public {
+        vm.prank(user);
+        staking.depositVault(100);
+
+        // Time is fast forwarded by 1 day
+        vm.warp(block.timestamp + 1 days);
+
+        vm.prank(user);
+        bool success = staking.withdrawVault(100);
+        assertTrue(success);
+
+        (uint256 shares, , uint256 pendingRewards) = staking.userInfo(user);
+        assertEq(shares, 0);
+        assertEq(pendingRewards, 100 * 1 days);
+    }
+
+    function testClaim() public {
+        vm.prank(user);
+        staking.depositVault(100);
+
+        // Time is fast forwarded by 1 day
+        vm.warp(block.timestamp + 1 days);
+
+        vm.prank(user);
+        bool success = staking.claim();
+        assertTrue(success);
+
+        uint256 rewardBalance = rewardToken.balanceOf(user);
+        assertEq(rewardBalance, 100 * 1 days);
+
+        (, uint256 lastClaimTime, uint256 pendingRewards) = staking.userInfo(
+            user
+        );
+        assertEq(lastClaimTime, block.timestamp);
+        assertEq(pendingRewards, 0);
+    }
+
+    function testTransferShares() public {
+        address recipient = address(2);
+
+        vm.prank(user);
+        staking.depositVault(100);
+
+        vm.prank(user);
+        bool success = staking.transferShares(recipient, 50);
+        assertTrue(success);
+
+        (uint256 senderShares, , ) = staking.userInfo(user);
+        assertEq(senderShares, 50);
+
+        (uint256 recipientShares, , ) = staking.userInfo(recipient);
+        assertEq(recipientShares, 50);
+    }
+}

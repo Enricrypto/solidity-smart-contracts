@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-contract ERC20Token {
+contract DepositToken {
     // public state variables
     address public owner; // address of the contract owner
     string public name; // name of the token
@@ -28,6 +28,9 @@ contract ERC20Token {
         address indexed spender,
         uint256 value
     );
+
+    // event of who calls the function
+    event Caller(address indexed owner);
 
     //CONSTRUCTOR:
     // - One-time Initialization: A special function that is executed once, when the contract is deployed.
@@ -73,13 +76,15 @@ contract ERC20Token {
 
         // transfer: Moves tokens from the caller's address to another address
         balanceOf[msg.sender] -= _value;
+        // By wrapping the arithmetic operation inside an unchecked block, you tell the Solidity
+        // compiler to skip these overflow and underflow checks for the enclosed operations.
         balanceOf[_to] += _value;
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
     // APPROVE FUNCTION:
-    // Allows an account to approve (give permission) a spender to spend tokens on his behalf.
+    // Allows an account to give permission (approve) to a spender to spend tokens on his behalf.
     function approve(
         address _spender,
         uint256 _value
@@ -110,9 +115,11 @@ contract ERC20Token {
             "ERC20: transfer amount exceeds allowance"
         );
 
+        allowance[_from][msg.sender] -= _value;
+
         balanceOf[_from] -= _value;
         balanceOf[_to] += _value;
-        allowance[_from][msg.sender] -= _value;
+
         emit Transfer(_from, _to, _value);
         return true;
     }
@@ -123,7 +130,8 @@ contract ERC20Token {
         uint256 _amount
     ) public onlyOwner returns (bool success) {
         require(_to != address(0), "ERC20: mint to the zero address");
-
+        // msg.sender is calling the function and interacting with the contract
+        emit Caller(msg.sender);
         // increase total supply, uses the totalSupply variable from the constructor function
         totalSupply += _amount;
         // increase balance of user(recipient)
