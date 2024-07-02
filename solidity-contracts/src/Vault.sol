@@ -5,8 +5,10 @@ import "./DepositToken.sol";
 
 // Vault contract inherits from the DepositToken contract.
 contract Vault is DepositToken {
-    // state variable. This is an instance of the DepositToken contract.
+    // state variables. This is an instance of the DepositToken contract.
     DepositToken public depositToken;
+    uint256 public totalAssets; // total assets in the vault contract
+    uint256 public exchangeRate; // Total Assets / Total Supply
 
     // The constructor initializes the Vault token with a name ("Vault Token"),
     // symbol ("VAULT"), decimals (18), and an initial supply of 0.
@@ -22,14 +24,23 @@ contract Vault is DepositToken {
 
         // Transfer DepositTokens from the user to this contract
         bool transferSuccess = depositToken.transferFrom(
-            msg.sender, // user's address
-            address(this), // vault contract's address
+            msg.sender, // user's address (_from)
+            address(this), // vault contract's address (_to)
             _amount
         );
         require(transferSuccess, "Transfer of DepositTokens failed");
 
+        // * Update the total assets
+        totalAssets += _amount;
+
+        // * Calculate the number of shares to mint based on the current exchange rate
+        uint256 sharesToMint = _amount * exchangeRate;
+
         // Mint Vault tokens equivalent to the amount of DepositTokens deposited
-        _mint(msg.sender, _amount);
+        _mint(msg.sender, sharesToMint);
+
+        // Update the exchange rate after amount of total assets change
+        updateExchangeRate();
 
         return true;
     }
@@ -42,27 +53,43 @@ contract Vault is DepositToken {
         require(_to != address(0), "ERC20: mint to the zero address");
 
         totalSupply += _amount;
+
         balanceOf[_to] += _amount;
 
         // tokens have been minted (sent from the zero address).
         emit Transfer(address(0), _to, _amount);
 
+        // Update the exchange rate after total supply change
+        updateExchangeRate();
+
         return true;
     }
 
-    function withdraw(uint256 _amount) public returns (bool success) {
-        require(_amount > 0, "Amount must be greater than zero");
+    function withdraw(uint256 _shares) public returns (bool success) {
+        require(_shares > 0, "Amount must be greater than zero");
         require(
-            balanceOf[msg.sender] >= _amount,
+            balanceOf[msg.sender] >= _shares,
             "Insufficient balance to withdraw"
         );
 
+        // * Calculate the amount of DepositTokens to transfer based on the current exchange rate
+        uint256 amountToTransfer = _shares / exchangeRate;
+
         // Burn Vault tokens from the user
-        _burn(msg.sender, _amount);
+        _burn(msg.sender, _shares);
 
         // Transfer the equivalent amount of DepositTokens from this contract to the user
-        bool transferSuccess = depositToken.transfer(msg.sender, _amount);
+        bool transferSuccess = depositToken.transfer(
+            msg.sender,
+            amountToTransfer
+        );
         require(transferSuccess, "Transfer of DepositTokens failed");
+
+        // * Update the total assets
+        totalAssets -= amountToTransfer;
+
+        // Update the exchange rate after amount of total assets change
+        updateExchangeRate();
 
         return true;
     }
@@ -82,6 +109,17 @@ contract Vault is DepositToken {
         // tokens have been burned (sent to the zero address).
         emit Transfer(_from, address(0), _amount);
 
+        // Update the exchange rate after total supply change
+        updateExchangeRate();
+
         return true;
+    }
+
+    function updateExchangeRate() internal {
+        if (totalAssets == 0 || totalSupply == 0) {
+            exchangeRate = 1; // Avoid division by zero, default to 1
+        } else {
+            exchangeRate = totalSupply / totalAssets;
+        }
     }
 }

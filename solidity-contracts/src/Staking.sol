@@ -19,7 +19,7 @@ contract Staking is Vault {
     constructor(
         // address of the deployed DepositToken contract for deposits.
         address _depositTokenAddress,
-        // address of the deployed DepositToken contract used for rewards.
+        // address of the deployed DepositToken contract for rewards.
         address _rewardTokenAddress
     ) Vault(_depositTokenAddress) {
         // initializes the rewardToken variable with the DepositToken contract

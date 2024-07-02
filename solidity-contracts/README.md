@@ -112,3 +112,10 @@ $ cast --help
 - Set a state variable for each user which tracks their deposit and claims ✅
 - Users that have withdrawn but didnt Claim yet (they should receive rewardTokens for the time they have staked in the past) ✅
 - Level would be to adjust how many rewards a user can Claim when they Transfer their vault Shares to a different user. (They should be able to Claim less/more after the Transfer) ✅
+
+7. Update to vault contract: 
+- Value of the shares changes based on the total tokens in the vault. ✅
+- Exchange Rate = Total Assets / Total Supply. i.e: 400 DAI / 200 shares, exchange rate = 2.✅
+- When you deposit tokens, the vault calculates how many new shares to give you based on the current exchange rate. ✅
+- When you withdraw tokens, the vault calculates how many tokens to give you back based on the number of shares you return and the current exchange rate. ✅
+- The exchange rate is updated every time there is a change in total assets or total supply, ensuring the value of shares reflects the current value of the vault.✅

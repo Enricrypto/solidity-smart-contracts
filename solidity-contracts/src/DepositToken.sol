@@ -34,8 +34,8 @@ contract DepositToken {
 
     //CONSTRUCTOR:
     // - One-time Initialization: A special function that is executed once, when the contract is deployed.
-    // - Security and Consistency: Using a constructor ensures that certain initial conditions are met before any other functions
-    // can be called. This helps maintain the integrity and security of the contract.
+    // - Security and Consistency: Using a constructor ensures that certain initial conditions are met before any other
+    // functions can be called. This helps maintain the integrity and security of the contract.
     // - Initialized the token with a name, symbol, decimals and initial supply
     constructor(
         string memory _name,
@@ -48,8 +48,8 @@ contract DepositToken {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
-        //allocate the initial supply to the contract creator
         totalSupply = _initialSupply * 10 ** uint256(decimals);
+        //allocate the initial supply to the contract creator
         balanceOf[msg.sender] = totalSupply;
     }
 
