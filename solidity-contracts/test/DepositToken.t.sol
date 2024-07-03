@@ -14,12 +14,18 @@ contract DepositTokenTest is Test {
         owner = address(0x2);
         sender = address(this);
         recipient = address(0x1);
+
         //create a new instance of the token
         vm.prank(owner);
         token = new DepositToken("MyToken", "MTK", 18, 1000);
+
         // Mint initial tokens to the owner
         vm.prank(owner);
         token.mint(owner, 1000);
+
+        // Transfer some tokens from owner to sender for testing transfer function
+        vm.prank(owner);
+        token.transfer(sender, 500);
     }
 
     // TEST TRANSFER
@@ -77,6 +83,7 @@ contract DepositTokenTest is Test {
         uint256 mintedAmount = 100;
 
         // mint tokens
+        vm.prank(owner);
         bool success = token.mint(recipient, mintedAmount);
 
         //verify minting process was succesful
@@ -167,7 +174,7 @@ contract DepositTokenTest is Test {
 
     function testTransferFromMultiple() public {
         uint256 initialBalanceOfOwner = token.balanceOf(owner);
-        uint256 initialBalanceOfSender = token.balanceOf(sender);
+        uint256 initialBalanceOfRecipient = token.balanceOf(recipient);
 
         uint256 allowanceAmount = 1000;
         uint256 transferAmount = 100;
@@ -185,7 +192,7 @@ contract DepositTokenTest is Test {
             "Allowance should be set correctly"
         );
 
-        // Transfer tokens from owner to sender
+        // Transfer tokens from owner to recipient
         vm.prank(sender); // Ensure the transferFrom call is made by the sender
         bool approveTransfer = token.transferFrom(
             owner,
@@ -197,16 +204,16 @@ contract DepositTokenTest is Test {
             "Transfer from owner to sender was not successful"
         );
 
-        // Check balances after transfer from owner to sender
+        // Check balances after transfer from owner to recipient
         assertEq(
             token.balanceOf(owner),
             initialBalanceOfOwner - transferAmount,
             "Balance of owner should decrease by transferred amount"
         );
         assertEq(
-            token.balanceOf(sender),
-            initialBalanceOfSender + transferAmount,
-            "Balance of sender should increase by transferred amount"
+            token.balanceOf(recipient),
+            initialBalanceOfRecipient + transferAmount,
+            "Balance of recipient should increase by transferred amount"
         );
 
         // Check final allowance

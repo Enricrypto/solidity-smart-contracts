@@ -48,7 +48,7 @@ contract DepositToken {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
-        totalSupply = _initialSupply * 10 ** uint256(decimals);
+        totalSupply = _initialSupply * 10 ** uint256(decimals); // same as 1e18
         //allocate the initial supply to the contract creator
         balanceOf[msg.sender] = totalSupply;
     }

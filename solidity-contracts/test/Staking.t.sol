@@ -11,6 +11,7 @@ contract StakingTest is Test {
     Staking staking;
 
     address user = address(1);
+    address owner = address(this);
 
     function setUp() public {
         depositToken = new DepositToken("MyToken", "MTK", 18, 1000);
@@ -45,7 +46,7 @@ contract StakingTest is Test {
         vm.prank(user);
         staking.depositVault(100);
 
-        // Time is fast forwarded by 1 day
+        // Time is fast forwarded by 1 day; used to simulate the passage of time in the test environment.
         vm.warp(block.timestamp + 1 days);
 
         vm.prank(user);
@@ -61,7 +62,7 @@ contract StakingTest is Test {
         vm.prank(user);
         staking.depositVault(100);
 
-        // Time is fast forwarded by 1 day
+        // Time is fast forwarded by 1 day; used to simulate the passage of time in the test environment.
         vm.warp(block.timestamp + 1 days);
 
         vm.prank(user);

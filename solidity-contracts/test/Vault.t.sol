@@ -19,6 +19,7 @@ contract VaultTest is Test {
         depositToken.mint(sender, 500);
 
         vault = new Vault(address(depositToken));
+        depositToken.approve(address(vault), type(uint256).max); // Approving a large amount for testing
     }
 
     function testDeposit() public {

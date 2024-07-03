@@ -84,11 +84,13 @@ contract Staking is Vault {
 
     function claim() public returns (bool success) {
         UserInfo storage user = userInfo[msg.sender];
-        require(user.pendingRewards > 0, "No rewards to claim");
 
         // Calculate the pending rewards since the last claim
         uint256 pending = _calculatePendingRewards(user);
         user.pendingRewards += pending;
+
+        // Ensure there are rewards to claim
+        require(user.pendingRewards > 0, "No rewards to claim");
 
         // Calculate total rewards to claim
         uint256 rewardAmount = user.pendingRewards;

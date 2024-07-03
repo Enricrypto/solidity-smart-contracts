@@ -7,8 +7,8 @@ import "./DepositToken.sol";
 contract Vault is DepositToken {
     // state variables. This is an instance of the DepositToken contract.
     DepositToken public depositToken;
-    uint256 public totalAssets; // total assets in the vault contract
-    uint256 public exchangeRate; // Total Assets / Total Supply
+    uint256 public totalAssets; // total number of DepositTokens that the Vault holds.
+    uint256 public exchangeRate; // exchange rate
 
     // The constructor initializes the Vault token with a name ("Vault Token"),
     // symbol ("VAULT"), decimals (18), and an initial supply of 0.
@@ -34,7 +34,9 @@ contract Vault is DepositToken {
         totalAssets += _amount;
 
         // * Calculate the number of shares to mint based on the current exchange rate
-        uint256 sharesToMint = _amount * exchangeRate;
+        uint256 sharesToMint = (totalSupply == 0 || totalAssets == 0)
+            ? _amount
+            : (totalSupply * _amount) / totalAssets;
 
         // Mint Vault tokens equivalent to the amount of DepositTokens deposited
         _mint(msg.sender, sharesToMint);
@@ -65,6 +67,7 @@ contract Vault is DepositToken {
         return true;
     }
 
+    // Vault tokens = shares
     function withdraw(uint256 _shares) public returns (bool success) {
         require(_shares > 0, "Amount must be greater than zero");
         require(
@@ -72,8 +75,8 @@ contract Vault is DepositToken {
             "Insufficient balance to withdraw"
         );
 
-        // * Calculate the amount of DepositTokens to transfer based on the current exchange rate
-        uint256 amountToTransfer = _shares / exchangeRate;
+        // * Calculate amount of DepositTokens you get when withdrawing a certain amount of shares from the Vault
+        uint256 amountToTransfer = (totalAssets * _shares) / totalSupply;
 
         // Burn Vault tokens from the user
         _burn(msg.sender, _shares);
@@ -119,7 +122,9 @@ contract Vault is DepositToken {
         if (totalAssets == 0 || totalSupply == 0) {
             exchangeRate = 1; // Avoid division by zero, default to 1
         } else {
-            exchangeRate = totalSupply / totalAssets;
+            // Using fixed-point arithmetic
+            // By multiplying totalAssets by 1e18, you effectively scale it up to handle fractional values precisely.
+            exchangeRate = (totalAssets * 1e18) / totalSupply;
         }
     }
 }
