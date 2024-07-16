@@ -6,32 +6,30 @@ import {DepositToken} from "../src/DepositToken.sol";
 
 contract DepositTokenTest is Test {
     DepositToken public token;
-    address public owner;
-    address public sender;
-    address public recipient;
+    address public admin; // contract owner
+    address public sender; // owner of the tokens
+    address public spender; // spender (third-party) address
+    address public recipient; // recipient of the tokens
 
     function setUp() public {
-        owner = address(0x2);
-        sender = address(this);
-        recipient = address(0x1);
+        admin = address(this);
+        sender = address(0x1);
+        spender = address(0x2);
+        recipient = address(0x3);
 
         //create a new instance of the token
-        vm.prank(owner);
+        vm.prank(admin);
         token = new DepositToken("MyToken", "MTK", 18, 1000);
 
-        // Mint initial tokens to the owner
-        vm.prank(owner);
-        token.mint(owner, 1000);
-
-        // Transfer some tokens from owner to sender for testing transfer function
-        vm.prank(owner);
+        // Transfer some tokens from admin to sender for testing transfer function
+        vm.prank(admin);
         token.transfer(sender, 500);
     }
 
     // TEST TRANSFER
     function testTransfer() public {
         // Get initial balance of the sender
-        uint256 initialOwnerBalance = token.balanceOf(sender);
+        uint256 initialSenderBalance = token.balanceOf(sender);
 
         // Get initial balance of the recipient
         uint256 initialRecipientBalance = token.balanceOf(recipient);
@@ -40,13 +38,14 @@ contract DepositTokenTest is Test {
         uint256 amount = 100;
 
         // Transfer tokens from sender to recipient
+        vm.prank(sender);
         token.transfer(recipient, amount);
 
         // Check if the sender's balance has decreased by the transfer amount
         assertEq(
             token.balanceOf(sender),
-            initialOwnerBalance - amount,
-            "Owner balance incorrect after transfer"
+            initialSenderBalance - amount,
+            "Sender balance incorrect after transfer"
         );
 
         // Check if the recipient's balance has increased by the transfer amount
@@ -61,21 +60,22 @@ contract DepositTokenTest is Test {
     function testApprove() public {
         uint256 amount = 100;
 
-        bool success = token.approve(recipient, amount);
+        vm.prank(sender);
+        bool success = token.approve(spender, amount);
 
         // confirm approval was succesful
         assertTrue(success, "Approval was not succesful");
 
         // confirm allowance is approved
         assertEq(
-            token.allowance(sender, recipient),
+            token.allowance(sender, spender),
             amount,
             "Allowance set up to 100"
         );
     }
 
     // TEST MINTING
-    function testMinting() public {
+    function testMint() public {
         // total supply is a public state variable, so it generates a getter function,
         // which is the reason why it's called with parenthesis
         uint256 initialTotalSupply = token.totalSupply();
@@ -83,7 +83,7 @@ contract DepositTokenTest is Test {
         uint256 mintedAmount = 100;
 
         // mint tokens
-        vm.prank(owner);
+        vm.prank(admin);
         bool success = token.mint(recipient, mintedAmount);
 
         //verify minting process was succesful
@@ -97,20 +97,21 @@ contract DepositTokenTest is Test {
         assertEq(
             token.balanceOf(recipient),
             initialBalance + mintedAmount,
-            "Balance should increase by minted amount"
+            "Balance of recipient should increase by minted amount"
         );
     }
 
     // TEST TRANSFER FROM
     function testTransferFrom() public {
         uint256 initialBalanceOfSender = token.balanceOf(sender);
-        uint256 initialBalanceOfReceiver = token.balanceOf(recipient);
+        uint256 initialBalanceOfRecipient = token.balanceOf(recipient);
         uint256 allowanceAmount = 100;
 
-        // approve allowance for transfer
+        // Approve allowance for recipient to spend sender's tokens
+        vm.prank(sender);
         bool approvalSuccess = token.approve(recipient, allowanceAmount);
 
-        assertTrue(approvalSuccess, "Approval was not succesful");
+        assertTrue(approvalSuccess, "Approval was not successful");
 
         assertEq(
             token.allowance(sender, recipient),
@@ -118,15 +119,14 @@ contract DepositTokenTest is Test {
             "Allowance should match approved amount"
         );
 
+        // Perform transferFrom by recipient who's acting like the spender on this case (transferring to itself)
         vm.prank(recipient);
-
         bool success = token.transferFrom(
             sender,
             recipient,
             allowanceAmount / 2
         );
-
-        assertTrue(success, "Transfer was not succesful");
+        assertTrue(success, "Transfer was not successful");
 
         assertEq(
             token.balanceOf(sender),
@@ -135,20 +135,19 @@ contract DepositTokenTest is Test {
         );
         assertEq(
             token.balanceOf(recipient),
-            initialBalanceOfReceiver + (allowanceAmount / 2),
+            initialBalanceOfRecipient + (allowanceAmount / 2),
             "Balance of recipient should increase by transferred amount"
         );
         assertEq(
             token.allowance(sender, recipient),
             allowanceAmount / 2,
-            "Token allowance should be 0"
+            "Allowance should be reduced by the transferred amount"
         );
 
+        // Perform another transferFrom by recipient (acting as spender)
         vm.prank(recipient);
-
         success = token.transferFrom(sender, recipient, allowanceAmount / 2);
-
-        assertTrue(success, "Transfer was not succesful");
+        assertTrue(success, "Transfer was not successful");
 
         assertEq(
             token.balanceOf(sender),
@@ -157,58 +156,59 @@ contract DepositTokenTest is Test {
         );
         assertEq(
             token.balanceOf(recipient),
-            initialBalanceOfReceiver + allowanceAmount,
+            initialBalanceOfRecipient + allowanceAmount,
             "Balance of recipient should increase by transferred amount"
         );
         assertEq(
             token.allowance(sender, recipient),
             0,
-            "Token allowance should be 0"
+            "Token allowance should be 0 after full transfer"
         );
     }
 
+    // test checking that recipient is trying to transfer tokens from sender without been given an allowance
     function testFailTransferFrom() public {
         vm.prank(recipient);
         token.transferFrom(sender, recipient, 100);
     }
 
     function testTransferFromMultiple() public {
-        uint256 initialBalanceOfOwner = token.balanceOf(owner);
+        uint256 initialBalanceOfSender = token.balanceOf(sender);
         uint256 initialBalanceOfRecipient = token.balanceOf(recipient);
 
         uint256 allowanceAmount = 1000;
         uint256 transferAmount = 100;
 
-        // Approve allowance from owner to sender
-        vm.prank(owner);
-        bool approveAllowance = token.approve(sender, allowanceAmount);
+        // Approve allowance from sender to recipient
+        vm.prank(sender);
+        bool approveAllowance = token.approve(spender, allowanceAmount);
         assertTrue(approveAllowance, "Approval was not successful");
 
         // Check allowance after approval
-        uint256 allowance = token.allowance(owner, sender);
+        uint256 allowance = token.allowance(sender, spender);
         assertEq(
             allowance,
             allowanceAmount,
             "Allowance should be set correctly"
         );
 
-        // Transfer tokens from owner to recipient
-        vm.prank(sender); // Ensure the transferFrom call is made by the sender
+        // Transfer tokens from sender to recipient
+        vm.prank(spender); // Ensure the transferFrom call is made by the spender, sending to recipient (third-party)
         bool approveTransfer = token.transferFrom(
-            owner,
+            sender,
             recipient,
             transferAmount
         );
         assertTrue(
             approveTransfer,
-            "Transfer from owner to sender was not successful"
+            "Transfer from admin to sender was not successful"
         );
 
-        // Check balances after transfer from owner to recipient
+        // Check balances after transfer from admin to recipient
         assertEq(
-            token.balanceOf(owner),
-            initialBalanceOfOwner - transferAmount,
-            "Balance of owner should decrease by transferred amount"
+            token.balanceOf(sender),
+            initialBalanceOfSender - transferAmount,
+            "Balance of sender should decrease by transferred amount"
         );
         assertEq(
             token.balanceOf(recipient),
@@ -218,43 +218,43 @@ contract DepositTokenTest is Test {
 
         // Check final allowance
         assertEq(
-            token.allowance(owner, sender),
+            token.allowance(sender, spender),
             allowanceAmount - transferAmount, // Only the transferFrom affects the allowance
-            "Allowance of owner to sender should decrease by transfer amount"
+            "Allowance of sender to recipient should decrease by transfer amount"
         );
     }
 
-    function testFailMinting() public {
-        // Ensure the owner has enough tokens for testing
-        uint256 initialBalanceOfOwner = token.balanceOf(owner);
+    function testFailMint() public {
+        // Ensure the admin has enough tokens for testing
+        uint256 initialBalanceOfSender = token.balanceOf(admin);
         uint256 mintAmount = 100;
 
-        // Non-owner address trying to mint tokens
-        address nonOwner = address(0x3);
+        // Non-admin address trying to mint tokens (could be sender, recipient, spender)
+        address nonadmin = address(0x4);
 
-        vm.prank(nonOwner);
+        vm.prank(nonadmin);
 
-        // Attempt minting by non-owner
-        bool mintByNonOwner = token.mint(nonOwner, mintAmount);
-        assertFalse(mintByNonOwner, "Non-owner was able to mint tokens");
+        // Attempt minting by non-admin
+        bool mintByNonadmin = token.mint(nonadmin, mintAmount);
+        assertFalse(mintByNonadmin, "Non-admin was able to mint tokens");
 
-        // Check if the balance of non-owner remains unchanged
+        // Check if the balance of non-admin remains unchanged
         assertEq(
-            token.balanceOf(nonOwner),
+            token.balanceOf(nonadmin),
             0,
-            "Non-owner balance should remain unchanged"
+            "Non-admin balance should remain unchanged"
         );
 
-        // Ensure the owner can mint tokens successfully
-        vm.prank(owner);
-        bool mintByOwner = token.mint(owner, mintAmount);
-        assertTrue(mintByOwner, "Owner failed to mint tokens");
+        // Ensure the admin can mint tokens successfully
+        vm.prank(admin);
+        bool mintByAdmin = token.mint(sender, mintAmount); // admin mint tokens to sender
+        assertTrue(mintByAdmin, "admin failed to mint tokens");
 
-        // Check if the balance of the owner has increased by mintAmount
+        // Check if the balance of the sender has increased by mintAmount
         assertEq(
-            token.balanceOf(owner),
-            initialBalanceOfOwner + mintAmount,
-            "Owner balance should increase by mint amount"
+            token.balanceOf(sender),
+            initialBalanceOfSender + mintAmount,
+            "admin balance should increase by mint amount"
         );
     }
 }

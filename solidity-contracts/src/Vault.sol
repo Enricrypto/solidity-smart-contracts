@@ -7,18 +7,20 @@ import "./DepositToken.sol";
 contract Vault is DepositToken {
     // state variables. This is an instance of the DepositToken contract.
     DepositToken public depositToken;
-    uint256 public totalAssets; // total number of DepositTokens that the Vault holds.
-    uint256 public exchangeRate; // exchange rate
 
     // The constructor initializes the Vault token with a name ("Vault Token"),
     // symbol ("VAULT"), decimals (18), and an initial supply of 0.
+    // Calls the constructor of the DepositToken contract with specific parameters for the Vault token.
+    // This sets the name, symbol, decimals, and initial supply for the Vault token.
     constructor(
         address _depositTokenAddress
     ) DepositToken("Vault Token", "VAULT", 18, 0) {
         // depositToken instance is initialized with address of the deployed DepositToken contract.
+        // This allows the Vault to interact with the DepositToken contract
         depositToken = DepositToken(_depositTokenAddress);
     }
 
+    // function to deposit tokens and receive vault tokens (shares) in exchange
     function deposit(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
@@ -30,19 +32,13 @@ contract Vault is DepositToken {
         );
         require(transferSuccess, "Transfer of DepositTokens failed");
 
-        // * Update the total assets
-        totalAssets += _amount;
-
-        // * Calculate the number of shares to mint based on the current exchange rate
-        uint256 sharesToMint = (totalSupply == 0 || totalAssets == 0)
+        // * Calculate the number of shares to mint
+        uint256 sharesToMint = (totalSupply == 0 || totalAssets() == 0) // in case the vault is empty
             ? _amount
-            : (totalSupply * _amount) / totalAssets;
+            : (totalSupply * _amount) / totalAssets(); // maintain proportion of shares, i.e: (1000 shares * 100 tokens) / 1000 tokens = 100 shares
 
         // Mint Vault tokens equivalent to the amount of DepositTokens deposited
         _mint(msg.sender, sharesToMint);
-
-        // Update the exchange rate after amount of total assets change
-        updateExchangeRate();
 
         return true;
     }
@@ -54,45 +50,40 @@ contract Vault is DepositToken {
     ) internal returns (bool success) {
         require(_to != address(0), "ERC20: mint to the zero address");
 
+        // 1. Update the total supply
         totalSupply += _amount;
 
+        // 2. Update the balance of the recipient
         balanceOf[_to] += _amount;
 
-        // tokens have been minted (sent from the zero address).
+        // 3. Emit the Transfer event to signal that tokens have been minted (sent from the zero address).
         emit Transfer(address(0), _to, _amount);
-
-        // Update the exchange rate after total supply change
-        updateExchangeRate();
 
         return true;
     }
 
-    // Vault tokens = shares
+    // function to withdraw vault tokens (shares) and receive deposit tokens in exchange
     function withdraw(uint256 _shares) public returns (bool success) {
         require(_shares > 0, "Amount must be greater than zero");
+
+        // check that user calling the function has enough vault tokens (shares) to withdraw
         require(
             balanceOf[msg.sender] >= _shares,
             "Insufficient balance to withdraw"
         );
 
         // * Calculate amount of DepositTokens you get when withdrawing a certain amount of shares from the Vault
-        uint256 amountToTransfer = (totalAssets * _shares) / totalSupply;
+        uint256 amountToTransfer = (totalAssets() * _shares) / totalSupply;
 
         // Burn Vault tokens from the user
         _burn(msg.sender, _shares);
 
-        // Transfer the equivalent amount of DepositTokens from this contract to the user
+        // Transfer the equivalent amount of DepositTokens from the contract (vault) to the user
         bool transferSuccess = depositToken.transfer(
             msg.sender,
             amountToTransfer
         );
         require(transferSuccess, "Transfer of DepositTokens failed");
-
-        // * Update the total assets
-        totalAssets -= amountToTransfer;
-
-        // Update the exchange rate after amount of total assets change
-        updateExchangeRate();
 
         return true;
     }
@@ -112,19 +103,14 @@ contract Vault is DepositToken {
         // tokens have been burned (sent to the zero address).
         emit Transfer(_from, address(0), _amount);
 
-        // Update the exchange rate after total supply change
-        updateExchangeRate();
-
         return true;
     }
 
-    function updateExchangeRate() internal {
-        if (totalAssets == 0 || totalSupply == 0) {
-            exchangeRate = 1; // Avoid division by zero, default to 1
-        } else {
-            // Using fixed-point arithmetic
-            // By multiplying totalAssets by 1e18, you effectively scale it up to handle fractional values precisely.
-            exchangeRate = (totalAssets * 1e18) / totalSupply;
-        }
+    // DYNAMIC Function to calculate the total value of assets managed by the vault.
+    // Returns the sum of all the assets (tokens) that are deposited in the vault.
+    // This value could be in terms of the underlying tokens that the vault holds or manages.
+    function totalAssets() public view returns (uint256) {
+        // balance of the Vault ===> address(this)
+        return depositToken.balanceOf(address(this));
     }
 }

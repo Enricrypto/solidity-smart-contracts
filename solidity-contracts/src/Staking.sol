@@ -5,7 +5,7 @@ import "./Vault.sol";
 // Staking contract inherits from the Vault contract.
 contract Staking is Vault {
     // instance of the DepositToken contract
-    DepositToken public rewardToken;
+    DepositToken public rewardsToken;
 
     //a struct with shares and deposit time variables to calculate rewards accurately
     struct UserInfo {
@@ -20,17 +20,18 @@ contract Staking is Vault {
         // address of the deployed DepositToken contract for deposits.
         address _depositTokenAddress,
         // address of the deployed DepositToken contract for rewards.
-        address _rewardTokenAddress
+        address _rewardsTokenAddress
     ) Vault(_depositTokenAddress) {
-        // initializes the rewardToken variable with the DepositToken contract
-        // located at _rewardTokenAddress
-        rewardToken = DepositToken(_rewardTokenAddress);
+        // initializes the rewardsToken variable with the DepositToken contract
+        // located at _rewardsTokenAddress
+        rewardsToken = DepositToken(_rewardsTokenAddress);
     }
 
     // deposit token and mint new shares
     function depositVault(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
+        // variable "user" of type UserInfo (struct) is being set equal to the address calling the function
         UserInfo storage user = userInfo[msg.sender];
 
         // Calculate pending rewards before updating user data
@@ -39,7 +40,9 @@ contract Staking is Vault {
             user.pendingRewards += pending;
         }
 
-        // Transfer DepositTokens from the user to this contract
+        // Transfer DepositTokens from the user to this contract.
+        // depositToken in Vault is inherited by Staking. So, Staking doesn't need to re-declare or re-initialize depositToken.
+        // It automatically has access to depositToken as an inherited state variable.
         bool transferSuccess = depositToken.transferFrom(
             msg.sender, // user's address
             address(this), // contract's address
@@ -48,6 +51,7 @@ contract Staking is Vault {
         require(transferSuccess, "Transfer of depositTokens failed");
 
         // Mint shares to the user equal to the deposited amount
+        // _mint is called directly as it's an internal function on Vault contract and not a public function
         _mint(msg.sender, _amount);
 
         // Update user shares and deposit time
@@ -74,9 +78,8 @@ contract Staking is Vault {
         bool transferSuccess = depositToken.transfer(msg.sender, _amount);
         require(transferSuccess, "Transfer of depositTokens failed");
 
-        // Update user shares
+        // Update user shares and deposit time
         user.shares -= _amount;
-
         user.lastClaimTime = block.timestamp; // Update claim time to now
 
         return true;
@@ -92,12 +95,12 @@ contract Staking is Vault {
         // Ensure there are rewards to claim
         require(user.pendingRewards > 0, "No rewards to claim");
 
-        // Calculate total rewards to claim
+        // Calculate total rewards to claim and after that pending rewards should be set to 0
         uint256 rewardAmount = user.pendingRewards;
         user.pendingRewards = 0;
 
-        // Mint reward tokens to the user
-        rewardToken.mint(msg.sender, rewardAmount);
+        // Mint reward tokens to the user using the internal mintRewards function
+        _mintRewards(msg.sender, rewardAmount);
 
         // Reset the last claim time to the current time
         user.lastClaimTime = block.timestamp;
@@ -140,12 +143,19 @@ contract Staking is Vault {
     function _calculatePendingRewards(
         UserInfo storage user
     ) internal view returns (uint256) {
+        // it's a view function as it doesn't modify the state, it only reads from it
         if (user.lastClaimTime == 0) {
+            // Checks if the user has never claimed rewards.
             return 0;
         }
-
         uint256 stakingDuration = block.timestamp - user.lastClaimTime;
         uint256 pending = user.shares * stakingDuration;
         return pending;
+    }
+
+    // Internal function to mint rewards. This function is not directly callable by users,
+    // ensuring that only the Staking contract (which acts on behalf of the admin) can mint the rewards.
+    function _mintRewards(address _to, uint256 _amount) internal {
+        rewardsToken.mint(_to, _amount);
     }
 }

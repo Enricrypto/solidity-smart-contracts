@@ -7,21 +7,37 @@ import "../src/Staking.sol";
 
 contract StakingTest is Test {
     DepositToken depositToken;
-    DepositToken rewardToken;
+    DepositToken rewardsToken;
     Staking staking;
 
-    address user = address(1);
-    address owner = address(this);
+    address public user;
+    address public owner;
+
+    event Caller(address indexed owner);
 
     function setUp() public {
+        // Set the owner address to this contract's address
+        owner = address(this);
+
         depositToken = new DepositToken("MyToken", "MTK", 18, 1000);
-        rewardToken = new DepositToken("MyRewardToken", "MTK", 18, 1000);
-        staking = new Staking(address(depositToken), address(rewardToken));
+        rewardsToken = new DepositToken("MyrewardsToken", "MTK", 18, 1000);
+
+        // Deploy the Staking contract with the correct owner address
+        staking = new Staking(address(depositToken), address(rewardsToken));
+
+        // set user's address
+        user = address(0x1);
+
+        // Change admin of rewardsToken to the staking contract
+        // vm.prank(owner);
+        emit Caller(owner);
+        rewardsToken.changeAdmin(address(staking));
 
         // The depositToken mints 1000 tokens to user
         depositToken.mint(user, 1000);
-        vm.prank(user);
+
         // The depositToken contract approves staking to spend up to 1000 tokens on behalf of user.
+        vm.prank(user);
         depositToken.approve(address(staking), 500);
     }
 
@@ -60,16 +76,18 @@ contract StakingTest is Test {
 
     function testClaim() public {
         vm.prank(user);
+        // deposit 100 tokens in vault
         staking.depositVault(100);
 
         // Time is fast forwarded by 1 day; used to simulate the passage of time in the test environment.
         vm.warp(block.timestamp + 1 days);
 
+        // claim
         vm.prank(user);
         bool success = staking.claim();
         assertTrue(success);
 
-        uint256 rewardBalance = rewardToken.balanceOf(user);
+        uint256 rewardBalance = rewardsToken.balanceOf(user);
         assertEq(rewardBalance, 100 * 1 days);
 
         (, uint256 lastClaimTime, uint256 pendingRewards) = staking.userInfo(
