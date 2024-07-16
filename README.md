@@ -47,7 +47,7 @@ This repository contains the core Solidity contracts for a vault/staking platfor
 
 1. **Clone the repository**:
     ```sh
-    git clone https://github.com/yourusername/gift-me-solidity.git
+    git clone https://github.com/your-username/Solidity-contracts.git
     cd contracts-solidity
     ```
 
