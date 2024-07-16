@@ -48,7 +48,7 @@ This repository contains the core Solidity contracts for a vault/staking platfor
 1. **Clone the repository**:
     ```sh
     git clone https://github.com/yourusername/gift-me-solidity.git
-    cd gift-me-solidity
+    cd contracts-solidity
     ```
 
 2. **Install Foundry**:
