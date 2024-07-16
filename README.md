@@ -107,4 +107,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Thank you for contributing to the Gift Me smart contracts! If you have any questions or need further assistance, feel free to open an issue or contact the project maintainers.
+Thank you for contributing to this smart contracts! If you have any questions or need further assistance, feel free to open an issue or contact the project maintainers.
