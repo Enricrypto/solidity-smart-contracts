@@ -1,4 +1,4 @@
-# Solidity Contracts for Gift Me
+# Solidity Contracts 
 
 This repository contains the Solidity smart contracts for the Gift Me platform, including `DepositToken`, `Vault`, and `Staking` contracts. These contracts are designed to facilitate token deposits, secure storage in vaults, and staking functionalities.
 
