@@ -121,33 +121,5 @@ $ cast --help
 - The exchange rate is updated every time there is a change in total assets or total supply, ensuring the value of shares reflects the current value of the vault.✅
 
 
-Q&A:
-
-DEPOSIT TOKEN CONTRACT: 
-1. TransferFrom function: 
-- If you want to transfer tokens to a third address different from the spender, the transferFrom function allows you to specify any recipient address as the _to parameter. This means the spender can transfer tokens from the sender to any address they specify, not just their own. This is a bit confusing. Recipient of tokens could be spender or a third party address. 
-
-2. Mint Function: Usually you will have a fix total supply when you launch a token and there's no need for the token to have a mint function, correct? On this case we are giving this option to the admin, so he can mint new tokens if needed, like reward tokens for example?  
-
-3. How would I use the changeAdmin function within another contract? I understand what the function does, but I would like to see a practical case. 
-
-VAULT CONTRACT
-1. TotalAssets function is a dynamic function to calculate the amount of assets in the vault. 
-- does this function help us calculate the exchange rate for the vault as it will constantly update the amount of totalAssets in the vault?
-
-2. DEPOSIT function: 
-- Why am I not calling approve function to make sure the allowance has been approved before transferring the tokens? I could set the allowance before transferring the tokens, but shouldn't I approve this allowance as well?
-- In my depositToken contract, the transferFrom function is called by the "spender", but when I use it on my Vault contract on my deposit function, the _from parameter is replaced by msg.sender? 
-- Why my _mint function doesn't required to have an onlyOwner modifier? If my deposit function is being called by msg.sender, who's the owner of the deposited tokens, this means that within the deposit function tokens will be minted without requiring that the owner of the vault mint those tokens, allowing any user to call it and trigger token minting. When use the onlyOwner modifier then? 
-
-
-STAKING CONTRACT:
-1. Claim function is calling rewardsToken.mint to mint rewardsToken, instance of DepositToken. 
-- The mint function of my depositToken contract can only be called by an admin. How am i making sure that the address calling
-the mint function is the admin as the claim function is being called by msg.sender, a user who has staked tokens and wants to claim the reward tokens? how does this work not necessarily the admin? If msg.sender is not the admin, the function call will revert with an error message.
-I have tried to set the staking contract to be managed by admin, but I still get the error message.  
-
-LIQUIDITY POOL CONTRACT:
-1. Does the liquidity provider needs to add the same liquidity for both tokens as in the current ratio at the moment of adding the liquidity? The ratio could've changed when swapping tokens. 
  
 
