@@ -145,4 +145,9 @@ STAKING CONTRACT:
 1. Claim function is calling rewardsToken.mint to mint rewardsToken, instance of DepositToken. 
 - The mint function of my depositToken contract can only be called by an admin. How am i making sure that the address calling
 the mint function is the admin as the claim function is being called by msg.sender, a user who has staked tokens and wants to claim the reward tokens? how does this work not necessarily the admin? If msg.sender is not the admin, the function call will revert with an error message.
-I have tried to set the staking contract to be managed by admin, but I still get the error message.   
+I have tried to set the staking contract to be managed by admin, but I still get the error message.  
+
+LIQUIDITY POOL CONTRACT:
+1. Does the liquidity provider needs to add the same liquidity for both tokens as in the current ratio at the moment of adding the liquidity? The ratio could've changed when swapping tokens. 
+ 
+
