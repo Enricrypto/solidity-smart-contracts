@@ -1,6 +1,6 @@
-# Solidity Contracts for Gift Me
+# Solidity Contracts 
 
-This repository contains the Solidity smart contracts for the Gift Me platform, including `DepositToken`, `Vault`, and `Staking` contracts. These contracts are designed to facilitate token deposits, secure storage in vaults, and staking functionalities.
+This repository contains Solidity smart contracts, including `DepositToken`, `Vault`, and `Staking` contracts. These contracts are designed to facilitate token deposits, secure storage in vaults, and staking functionalities.
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -15,7 +15,7 @@ This repository contains the Solidity smart contracts for the Gift Me platform, 
 
 ## Introduction
 
-This repository contains the core Solidity contracts for the Gift Me platform. The `DepositToken` contract handles token deposits, the `Vault` contract provides secure storage, and the `Staking` contract allows users to stake their tokens and earn rewards.
+This repository contains the core Solidity contracts for a vault/staking platform. The `DepositToken` contract handles token deposits, the `Vault` contract provides secure storage, and the `Staking` contract allows users to stake their tokens and earn rewards.
 
 ## Contracts Overview
 
@@ -47,8 +47,8 @@ This repository contains the core Solidity contracts for the Gift Me platform. T
 
 1. **Clone the repository**:
     ```sh
-    git clone https://github.com/yourusername/gift-me-solidity.git
-    cd gift-me-solidity
+    git clone https://github.com/your-username/Solidity-contracts.git
+    cd contracts-solidity
     ```
 
 2. **Install Foundry**:
@@ -107,4 +107,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Thank you for contributing to the Gift Me smart contracts! If you have any questions or need further assistance, feel free to open an issue or contact the project maintainers.
+Thank you for contributing to this smart contracts! If you have any questions or need further assistance, feel free to open an issue or contact the project maintainers.
