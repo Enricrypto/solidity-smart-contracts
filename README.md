@@ -13,32 +13,32 @@ This repository contains Solidity smart contracts, including `DepositToken`, `Va
 - [Contributing](#contributing)
 - [License](#license)
 
-Introduction
+## Introduction
+
 This repository contains the core Solidity contracts for a vault/staking platform. The DepositToken contract handles token deposits, the Vault contract provides secure storage, the Staking contract allows users to stake their tokens and earn rewards, and the LiquidityPool contract enables users to provide liquidity and participate in liquidity mining.
 
 Contracts Overview
 
-DepositToken
-
+## DepositToken
 Purpose: Handles the depositing of tokens by users.
 Key Functions:
 deposit(uint256 amount): Allows users to deposit a specified amount of tokens.
 withdraw(uint256 amount): Allows users to withdraw a specified amount of their deposited tokens.
-Vault
 
+## Vault
 Purpose: Provides secure storage for tokens.
 Key Functions:
 store(uint256 amount): Stores a specified amount of tokens in the vault.
 retrieve(uint256 amount): Retrieves a specified amount of tokens from the vault.
-Staking
 
+## Staking
 Purpose: Allows users to stake their tokens and earn rewards.
 Key Functions:
 stake(uint256 amount): Allows users to stake a specified amount of tokens.
 unstake(uint256 amount): Allows users to unstake a specified amount of tokens.
 claimRewards(): Allows users to claim their staking rewards.
-LiquidityPool
 
+## LiquidityPool
 Purpose: Enables users to provide liquidity and participate in liquidity mining.
 Key Functions:
 addLiquidity(uint256 tokenAmount, uint256 ethAmount): Allows users to add liquidity to the pool by providing both tokens and ETH.
