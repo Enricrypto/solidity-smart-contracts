@@ -146,7 +146,10 @@ contract LiquidityPool {
         // Calculate amount of each token to return based on the shares (liquidity pool tokens) being burned.
         amount0 = (_shares * bal0) / totalSupply;
         amount1 = (_shares * bal1) / totalSupply;
-        require(amount0 > 0 && amount1 > 0, "amount0 or amount1 = 0");
+        require(
+            amount0 > 0 && amount1 > 0,
+            "Liquidity of tokens must be greater than 0"
+        );
 
         // Burn the pool tokens from the user's balance and update the total supply.
         _burn(msg.sender, _shares);

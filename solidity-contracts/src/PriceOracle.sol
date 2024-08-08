@@ -5,37 +5,32 @@ import "./LiquidityPool.sol";
 
 contract PriceOracle {
     LiquidityPool public liquidityPool;
+    address public token0;
+    address public token1;
 
-    constructor(address _liquidityPool) {
+    constructor(address _liquidityPool, address _token0, address _token1) {
         liquidityPool = LiquidityPool(_liquidityPool);
+        token0 = _token0;
+        token1 = _token1;
     }
 
-    // Function to get the price of token0 in terms of token1
-    function getToken0Price() external view returns (uint256 price) {
+    // Function to get the price of a given token in terms of the other token
+    function getPrice(address _token) external view returns (uint256 price) {
         // Retrieves the current reserves of token0 and token1 from the liquidity pool
         (uint256 reserve0, uint256 reserve1) = getReserves();
 
         // Ensure reserves are greater than 0 to avoid division by zero
         require(reserve0 > 0 && reserve1 > 0, "Invalid reserves");
 
-        // Calculate the price of token0 in terms of token1
-        price = (reserve1 * 1e18) / reserve0;
-    }
-
-    // Function to get the price of token1 in terms of token0
-    function getToken1Price() external view returns (uint256 price) {
-        // Retrieves the current reserves of token0 and token1 from the liquidity pool
-        (uint256 reserve0, uint256 reserve1) = getReserves();
-
-        // Ensure reserves are greater than 0 to avoid division by zero
-        require(reserve0 > 0 && reserve1 > 0, "Invalid reserves");
-
-        // Calculate the price of token1 in terms of token0
-        price = (reserve0 * 1e18) / reserve1;
-    }
-
-    function getPrice(_address) external view returns (uint256 price) {
-        // create logic to return any token price
+        if (_token == token0) {
+            // Calculate the price of token0 in terms of token1
+            price = (reserve1 * 1e18) / reserve0;
+        } else if (_token == token1) {
+            // Calculate the price of token1 in terms of token0
+            price = (reserve0 * 1e18) / reserve1;
+        } else {
+            revert("Invalid token address");
+        }
     }
 
     // Helper function to get reserves from the liquidity pool contract

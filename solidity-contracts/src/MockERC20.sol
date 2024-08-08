@@ -9,11 +9,4 @@ contract MockERC20 is ERC20 {
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
-
-    function approve(
-        address spender,
-        uint256 amount
-    ) public override returns (bool) {
-        return super.approve(spender, amount);
-    }
 }
