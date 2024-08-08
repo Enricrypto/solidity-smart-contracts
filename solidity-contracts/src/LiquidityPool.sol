@@ -19,32 +19,9 @@ contract LiquidityPool {
 
     // Constructor initializes the contract with addresses for token0 and token1.
     // These are the ERC20 tokens that will be used in the liquidity pool.
-    constructor(
-        address _token0,
-        address _token1,
-        uint256 _initialAmount0,
-        uint256 _initialAmount1
-    ) {
+    constructor(address _token0, address _token1) {
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
-
-        // Transfer initial tokens from the deployer to the pool.
-        require(
-            token0.transferFrom(msg.sender, address(this), _initialAmount0),
-            "Transfer of token0 failed"
-        );
-        require(
-            token1.transferFrom(msg.sender, address(this), _initialAmount1),
-            "Transfer of token1 failed"
-        );
-
-        // Initialize reserves with the amounts transferred.
-        reserve0 = _initialAmount0;
-        reserve1 = _initialAmount1;
-
-        // Mint initial liquidity pool tokens to the deployer.
-        totalSupply = _sqrt(_initialAmount0 * _initialAmount1);
-        balanceOf[msg.sender] = totalSupply;
     }
 
     // Private function to mint liquidity pool tokens to a user's address.

@@ -19,7 +19,7 @@ contract PriceOracle {
         require(reserve0 > 0 && reserve1 > 0, "Invalid reserves");
 
         // Calculate the price of token0 in terms of token1
-        price = (reserve1 * (10 ** 18)) / reserve0;
+        price = (reserve1 * 1e18) / reserve0;
     }
 
     // Function to get the price of token1 in terms of token0
@@ -31,7 +31,11 @@ contract PriceOracle {
         require(reserve0 > 0 && reserve1 > 0, "Invalid reserves");
 
         // Calculate the price of token1 in terms of token0
-        price = (reserve0 * (10 ** 18)) / reserve1;
+        price = (reserve0 * 1e18) / reserve1;
+    }
+
+    function getPrice(_address) external view returns (uint256 price) {
+        // create logic to return any token price
     }
 
     // Helper function to get reserves from the liquidity pool contract
