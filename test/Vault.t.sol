@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "lib/forge-std/src/Test.sol";
 import {Vault} from "../src/Vault.sol";
 import {DepositToken} from "../src/DepositToken.sol";
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
+import {Test} from "lib/forge-std/src/Test.sol";
 import "../src/DepositToken.sol";
 import "../src/Staking.sol";
 
