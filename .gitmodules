@@ -4,3 +4,10 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "solidity-contracts/lib/openzeppelin-contracts"]
+    path = solidity-contracts/lib/openzeppelin-contracts
+    url = https://github.com/someuser/some-repo.git
+
+[submodule "solidity-contracts/solidity-contracts/lib/openzeppelin-contracts"]
+	path = solidity-contracts/solidity-contracts/lib/openzeppelin-contracts
+	url = https://github.com/Enricrypto/Solidity-contracts.git
