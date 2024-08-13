@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
 // The LiquidityPool contract manages two types of ERC20 tokens, allowing users to provide or withdraw liquidity.
 contract LiquidityPool {
     // References to the two ERC20 tokens used in this liquidity pool.
@@ -185,30 +187,4 @@ contract LiquidityPool {
     function _min(uint x, uint y) private pure returns (uint) {
         return x <= y ? x : y;
     }
-}
-
-// The IERC20 interface defines the standard functions and events for ERC20 tokens.
-// This allows the LiquidityPool contract to interact with any ERC20 token.
-interface IERC20 {
-    function totalSupply() external view returns (uint);
-
-    function balanceOf(address account) external view returns (uint);
-
-    function transfer(address recipient, uint amount) external returns (bool);
-
-    function allowance(
-        address owner,
-        address spender
-    ) external view returns (uint);
-
-    function approve(address spender, uint amount) external returns (bool);
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint amount
-    ) external returns (bool);
-
-    event Transfer(address indexed from, address indexed to, uint amount);
-    event Approval(address indexed owner, address indexed spender, uint amount);
 }
