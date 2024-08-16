@@ -3,15 +3,15 @@ pragma solidity ^0.8.13;
 
 import "./DepositToken.sol";
 
-// Vault contract inherits from the DepositToken contract.
+// Vault contract inherits from the DepositToken contract
 contract Vault is DepositToken {
-    // state variables. This is an instance of the DepositToken contract.
+    // state variable. This is an instance of the DepositToken contract that doesn't alter the DepositToken contract
     DepositToken public depositToken;
 
     // The constructor initializes the Vault token with a name ("Vault Token"),
-    // symbol ("VAULT"), decimals (18), and an initial supply of 0.
+    // symbol ("VAULT"), decimals (18), and an initial supply of 0
     // Calls the constructor of the DepositToken contract with specific parameters for the Vault token.
-    // This sets the name, symbol, decimals, and initial supply for the Vault token.
+    // This sets the name, symbol, decimals, and initial supply for the Vault token
     constructor(
         address _depositTokenAddress
     ) DepositToken("Vault Token", "VAULT", 18, 0) {
@@ -32,7 +32,9 @@ contract Vault is DepositToken {
         );
         require(transferSuccess, "Transfer of DepositTokens failed");
 
-        // * Calculate the number of shares to mint
+        // Calculate the number of shares to mint
+        // totalSupply represents the total amount of shares minted by the vault
+        // totalAssets() is the total balance of tokens currently held in the vault
         uint256 sharesToMint = (totalSupply == 0 || totalAssets() == 0) // in case the vault is empty
             ? _amount
             : (totalSupply * _amount) / totalAssets(); // maintain proportion of shares, i.e: (1000 shares * 100 tokens) / 1000 tokens = 100 shares
@@ -100,9 +102,8 @@ contract Vault is DepositToken {
         // Decreases the total supply of Vault tokens.
         totalSupply -= _amount;
 
-        // tokens have been burned (sent to the zero address).
+        // tokens have been burnt (sent to the zero address).
         emit Transfer(_from, address(0), _amount);
-
         return true;
     }
 

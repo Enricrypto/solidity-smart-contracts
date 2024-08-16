@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
+
+import "./DepositToken.sol";
 import "./Vault.sol";
 
 // Staking contract inherits from the Vault contract.
@@ -31,6 +33,11 @@ contract Staking is Vault {
     function depositVault(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
+        require(
+            depositToken.balanceOf(msg.sender) >= _amount,
+            "Insufficient funds"
+        );
+
         // variable "user" of type UserInfo (struct) is being set equal to the address calling the function
         UserInfo storage user = userInfo[msg.sender];
 
@@ -61,6 +68,7 @@ contract Staking is Vault {
         return true;
     }
 
+    //withdraw shares from vault
     function withdrawVault(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
@@ -109,7 +117,7 @@ contract Staking is Vault {
     }
 
     // function allows a user (msg.sender) to transfer their vault shares (_amount)
-    //to another address (_to)
+    // to another address (_to)
     function transferShares(
         address _to,
         uint256 _amount
@@ -129,7 +137,8 @@ contract Staking is Vault {
         uint256 recipientPending = _calculatePendingRewards(recipient);
         recipient.pendingRewards += recipientPending;
 
-        sender.lastClaimTime = block.timestamp; // Update claim time to now
+        // Update claim time to now
+        sender.lastClaimTime = block.timestamp;
         recipient.lastClaimTime = block.timestamp;
 
         // Deduct shares from sender
@@ -144,8 +153,8 @@ contract Staking is Vault {
         UserInfo storage user
     ) internal view returns (uint256) {
         // it's a view function as it doesn't modify the state, it only reads from it
+        // Checks if the user has never claimed rewards.
         if (user.lastClaimTime == 0) {
-            // Checks if the user has never claimed rewards.
             return 0;
         }
         uint256 stakingDuration = block.timestamp - user.lastClaimTime;

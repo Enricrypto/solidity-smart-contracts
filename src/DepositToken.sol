@@ -48,7 +48,7 @@ contract DepositToken {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
-        totalSupply = _initialSupply * 10 ** uint256(decimals); // same as 1e18
+        totalSupply = _initialSupply * 10 * 1e18; // shorthand for 1 * 10^18, often used to represent 1 Ether in the smallest unit, Wei
         //allocate the initial supply to the contract creator
         balanceOf[msg.sender] = totalSupply;
     }
@@ -114,7 +114,7 @@ contract DepositToken {
             "ERC20: transfer amount exceeds balance"
         );
         require(
-            allowance[_from][msg.sender] >= _value,
+            allowance[_from][msg.sender] >= _value, // msg.sender is the address of the contract given the allowance
             "ERC20: transfer amount exceeds allowance"
         );
 
@@ -141,7 +141,7 @@ contract DepositToken {
         totalSupply += _amount;
         // increase balance of user(recipient)
         balanceOf[_to] += _amount;
-        // emit a transfer event from the zero address
+        // emit a transfer event FROM the zero address
         emit Transfer(address(0), _to, _amount);
 
         return true;

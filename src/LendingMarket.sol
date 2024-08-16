@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "./PriceOracle.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-contract LendingMarket is PriceOracle {
+contract LendingMarket {
     // declare both tokens as state variables
     IERC20 public lendingToken; // used for borrowing and repayment
     IERC20 public collateralToken; // used for collateral purposes
@@ -17,12 +17,11 @@ contract LendingMarket is PriceOracle {
     constructor(
         address _lendingToken,
         address _collateralToken,
-        address _liquidityPool,
-        address _token0,
-        address _token1
-    ) PriceOracle(_liquidityPool, _token0, _token1) {
+        address _priceOracle
+    ) {
         lendingToken = IERC20(_lendingToken);
         collateralToken = IERC20(_collateralToken);
+        priceOracle = PriceOracle(_priceOracle);
     }
 
     // This function will transfer collateral from the user to the contract.
@@ -104,7 +103,7 @@ contract LendingMarket is PriceOracle {
         );
         uint256 CollateralValueInLendingToken = (collateralBalance[_user] *
             collateralPrice) / 1e18;
-        return CollateralValueInLendingToken;
+        return CollateralValueInLendingToken - borrowedBalance[_user];
     }
 
     function liquidate(address _user) external {
@@ -128,6 +127,10 @@ contract LendingMarket is PriceOracle {
         // Get the amount the liquidator needs to repay, which is the user's borrowed balance
         uint256 repaymentAmount = borrowedBalance[_user];
 
+        // Transfer the repayment amount from the liquidator to the contract.
+        // Check if this is succesfull before balancing to zero
+        lendingToken.transferFrom(msg.sender, address(this), repaymentAmount);
+
         // Reset the user's borrowed and collateral balances to zero to reflect the loan being repaid
         // and the collateral being transferred.
         borrowedBalance[_user] = 0;
@@ -135,8 +138,5 @@ contract LendingMarket is PriceOracle {
 
         // Transfers the collateral to the liquidator
         collateralToken.transfer(msg.sender, collateralBalance[_user]);
-
-        // Transfer the repayment amount from the liquidator to the contract
-        lendingToken.transferFrom(msg.sender, address(this), repaymentAmount);
     }
 }

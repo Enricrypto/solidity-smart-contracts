@@ -19,40 +19,42 @@ contract StakingTest is Test {
         // Set the owner address to this contract's address
         owner = address(this);
 
+        // Deploy DepositToken and RewardsToken contracts
         depositToken = new DepositToken("MyToken", "MTK", 18, 1000);
-        rewardsToken = new DepositToken("MyrewardsToken", "MTK", 18, 1000);
+        rewardsToken = new DepositToken("MyRewardsToken", "MRK", 18, 1000);
 
-        // Deploy the Staking contract with the correct owner address
+        // Deploy Staking contract with initial setup
         staking = new Staking(address(depositToken), address(rewardsToken));
 
-        // set user's address
+        // Set the user's address
         user = address(0x1);
 
         // Change admin of rewardsToken to the staking contract
-        // vm.prank(owner);
         emit Caller(owner);
         rewardsToken.changeAdmin(address(staking));
 
-        // The depositToken mints 1000 tokens to user
+        // Mint 1000 DepositTokens to the user
         depositToken.mint(user, 1000);
 
-        // The depositToken contract approves staking to spend up to 1000 tokens on behalf of user.
+        // Approve the staking contract to spend up to 500 DepositTokens on behalf of the user
         vm.prank(user);
         depositToken.approve(address(staking), 500);
     }
 
     function testDeposit() public {
         vm.prank(user);
-        // user deposits 100 tokens into the staking contract
+        // User deposits 100 tokens into the staking contract
         bool success = staking.depositVault(100);
         assertTrue(success);
-        // destructuring: the variables inside the parenthesis should be assigned values from
-        // the return values of staking.userInfo(user) in the order they are declared.
+
+        // Retrieve user's information
         (
             uint256 shares,
             uint256 lastClaimTime,
             uint256 pendingRewards
         ) = staking.userInfo(user);
+
+        // Check that the shares, lastClaimTime, and pendingRewards are as expected
         assertEq(shares, 100);
         assertEq(lastClaimTime, block.timestamp);
         assertEq(pendingRewards, 0);
@@ -62,55 +64,67 @@ contract StakingTest is Test {
         vm.prank(user);
         staking.depositVault(100);
 
-        // Time is fast forwarded by 1 day; used to simulate the passage of time in the test environment.
+        // Time is fast-forwarded by 1 day
         vm.warp(block.timestamp + 1 days);
 
         vm.prank(user);
         bool success = staking.withdrawVault(100);
         assertTrue(success);
 
+        // Retrieve user's information
         (uint256 shares, , uint256 pendingRewards) = staking.userInfo(user);
+
+        // Expecting 100 tokens as rewards for 1 day
+        uint256 expectedRewards = 100;
         assertEq(shares, 0);
-        assertEq(pendingRewards, 100 * 1 days);
+        assertEq(pendingRewards, expectedRewards);
     }
 
     function testClaim() public {
         vm.prank(user);
-        // deposit 100 tokens in vault
+        // Deposit 100 tokens in the vault
         staking.depositVault(100);
 
-        // Time is fast forwarded by 1 day; used to simulate the passage of time in the test environment.
+        // Time is fast-forwarded by 1 day
         vm.warp(block.timestamp + 1 days);
 
-        // claim
+        // User claims their rewards
         vm.prank(user);
         bool success = staking.claim();
         assertTrue(success);
 
+        // Check that the reward balance of the user is as expected
         uint256 rewardBalance = rewardsToken.balanceOf(user);
-        assertEq(rewardBalance, 100 * 1 days);
+        assertEq(rewardBalance, 100);
 
+        // Retrieve user's information
         (, uint256 lastClaimTime, uint256 pendingRewards) = staking.userInfo(
             user
         );
+
+        // Check that the lastClaimTime and pendingRewards are as expected
         assertEq(lastClaimTime, block.timestamp);
         assertEq(pendingRewards, 0);
     }
 
     function testTransferShares() public {
-        address recipient = address(2);
+        address recipient = address(0x2);
 
         vm.prank(user);
+        // User deposits 100 tokens in the vault
         staking.depositVault(100);
 
+        // User transfers 50 shares to the recipient
         vm.prank(user);
         bool success = staking.transferShares(recipient, 50);
         assertTrue(success);
 
+        // Retrieve information for both the sender and the recipient
         (uint256 senderShares, , ) = staking.userInfo(user);
-        assertEq(senderShares, 50);
-
         (uint256 recipientShares, , ) = staking.userInfo(recipient);
+
+        // Check that the sender's and recipient's shares are as expected
+        assertEq(senderShares, 50);
         assertEq(recipientShares, 50);
     }
 }
