@@ -23,11 +23,7 @@ contract DepositToken {
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     // emitted when an allowance is set by the 'approve' function
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
     // event of who calls the function
     event Caller(address indexed owner);
@@ -37,12 +33,7 @@ contract DepositToken {
     // - Security and Consistency: Using a constructor ensures that certain initial conditions are met before any other
     // functions can be called. This helps maintain the integrity and security of the contract.
     // - Initialized the token with a name, symbol, decimals and initial supply
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals,
-        uint256 _initialSupply
-    ) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals, uint256 _initialSupply) {
         // set the contract deployer as the initial admin
         admin = msg.sender;
         name = _name;
@@ -62,10 +53,7 @@ contract DepositToken {
 
     // TRANSFER FUNCTION: Allows transferring tokens from sender’s account to another account.
     // Caller: The transfer function is typically called by the owner of the tokens (the token holder).
-    function transfer(
-        address _to,
-        uint256 _value
-    ) public returns (bool success) {
+    function transfer(address _to, uint256 _value) public returns (bool success) {
         // address(0) represents the zero address in Ethereum, which is a special address
         // typically used to signify the absence of an address or to burn tokens
         require(_to != address(0), "ERC20: transfer to the zero address");
@@ -87,10 +75,7 @@ contract DepositToken {
 
     // APPROVE FUNCTION:
     // Allows an account to give permission (approve) to a spender to spend tokens on his behalf.
-    function approve(
-        address _spender,
-        uint256 _value
-    ) public returns (bool success) {
+    function approve(address _spender, uint256 _value) public returns (bool success) {
         require(_spender != address(0), "ERC20: approve to the zero address");
 
         // to set an allowance: allowance[owner][spender]
@@ -109,10 +94,7 @@ contract DepositToken {
     ) public returns (bool success) {
         require(_from != address(0), "ERC20: transfer from the zero address");
         require(_to != address(0), "ERC20: transfer to the zero address");
-        require(
-            balanceOf[_from] >= _value,
-            "ERC20: transfer amount exceeds balance"
-        );
+        require(balanceOf[_from] >= _value, "ERC20: transfer amount exceeds balance");
         require(
             allowance[_from][msg.sender] >= _value, // msg.sender is the address of the contract given the allowance
             "ERC20: transfer amount exceeds allowance"
@@ -130,10 +112,7 @@ contract DepositToken {
     }
 
     // FUNCTION MINT: Allows the admin to mint new tokens and assign them to a specific account (_to)
-    function mint(
-        address _to,
-        uint256 _amount
-    ) public onlyAdmin returns (bool success) {
+    function mint(address _to, uint256 _amount) public onlyAdmin returns (bool success) {
         require(_to != address(0), "ERC20: mint to the zero address");
         // msg.sender is calling the function and interacting with the contract
         emit Caller(msg.sender);

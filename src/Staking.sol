@@ -33,10 +33,7 @@ contract Staking is Vault {
     function depositVault(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
-        require(
-            depositToken.balanceOf(msg.sender) >= _amount,
-            "Insufficient funds"
-        );
+        require(depositToken.balanceOf(msg.sender) >= _amount, "Insufficient funds");
 
         // variable "user" of type UserInfo (struct) is being set equal to the address calling the function
         UserInfo storage user = userInfo[msg.sender];
@@ -118,10 +115,7 @@ contract Staking is Vault {
 
     // function allows a user (msg.sender) to transfer their vault shares (_amount)
     // to another address (_to)
-    function transferShares(
-        address _to,
-        uint256 _amount
-    ) public returns (bool success) {
+    function transferShares(address _to, uint256 _amount) public returns (bool success) {
         UserInfo storage sender = userInfo[msg.sender];
         require(sender.shares >= _amount, "Insufficient shares to transfer");
 
@@ -149,9 +143,7 @@ contract Staking is Vault {
 
     // function to calculate the total pending rewards accrued by the user since their
     // last claim.
-    function _calculatePendingRewards(
-        UserInfo storage user
-    ) internal view returns (uint256) {
+    function _calculatePendingRewards(UserInfo storage user) internal view returns (uint256) {
         // it's a view function as it doesn't modify the state, it only reads from it
         // Checks if the user has never claimed rewards.
         if (user.lastClaimTime == 0) {

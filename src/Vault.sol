@@ -12,9 +12,7 @@ contract Vault is DepositToken {
     // symbol ("VAULT"), decimals (18), and an initial supply of 0
     // Calls the constructor of the DepositToken contract with specific parameters for the Vault token.
     // This sets the name, symbol, decimals, and initial supply for the Vault token
-    constructor(
-        address _depositTokenAddress
-    ) DepositToken("Vault Token", "VAULT", 18, 0) {
+    constructor(address _depositTokenAddress) DepositToken("Vault Token", "VAULT", 18, 0) {
         // depositToken instance is initialized with address of the deployed DepositToken contract.
         // This allows the Vault to interact with the DepositToken contract
         depositToken = DepositToken(_depositTokenAddress);
@@ -46,10 +44,7 @@ contract Vault is DepositToken {
     }
 
     // Update the total supply of Vault Tokens and the balance of the user.
-    function _mint(
-        address _to,
-        uint256 _amount
-    ) internal returns (bool success) {
+    function _mint(address _to, uint256 _amount) internal returns (bool success) {
         require(_to != address(0), "ERC20: mint to the zero address");
 
         // 1. Update the total supply
@@ -69,10 +64,7 @@ contract Vault is DepositToken {
         require(_shares > 0, "Amount must be greater than zero");
 
         // check that user calling the function has enough vault tokens (shares) to withdraw
-        require(
-            balanceOf[msg.sender] >= _shares,
-            "Insufficient balance to withdraw"
-        );
+        require(balanceOf[msg.sender] >= _shares, "Insufficient balance to withdraw");
 
         // * Calculate amount of DepositTokens you get when withdrawing a certain amount of shares from the Vault
         uint256 amountToTransfer = (totalAssets() * _shares) / totalSupply;
@@ -81,19 +73,13 @@ contract Vault is DepositToken {
         _burn(msg.sender, _shares);
 
         // Transfer the equivalent amount of DepositTokens from the contract (vault) to the user
-        bool transferSuccess = depositToken.transfer(
-            msg.sender,
-            amountToTransfer
-        );
+        bool transferSuccess = depositToken.transfer(msg.sender, amountToTransfer);
         require(transferSuccess, "Transfer of DepositTokens failed");
 
         return true;
     }
 
-    function _burn(
-        address _from,
-        uint256 _amount
-    ) internal returns (bool success) {
+    function _burn(address _from, uint256 _amount) internal returns (bool success) {
         require(_from != address(0), "ERC20: burn from the zero address");
 
         // Decreases the user's balance by the _amount of Vault tokens.

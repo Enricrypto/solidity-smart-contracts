@@ -10,14 +10,14 @@ contract LiquidityPool {
     IERC20 public immutable token1;
 
     // Reserves of token0 and token1 within the pool (balance of tokens in the liquidity pool).
-    uint public reserve0;
-    uint public reserve1;
+    uint256 public reserve0;
+    uint256 public reserve1;
 
     // Total supply of liquidity pool tokens. These represent a share (liquidity provider tokens) in the pool.
-    uint public totalSupply;
+    uint256 public totalSupply;
 
     // Mapping from user address to the number of liquidity pool tokens they hold.
-    mapping(address => uint) public balanceOf;
+    mapping(address => uint256) public balanceOf;
 
     // Constructor initializes the contract with addresses for token0 and token1.
     // These are the ERC20 tokens that will be used in the liquidity pool.
@@ -28,33 +28,27 @@ contract LiquidityPool {
 
     // Private function to mint liquidity pool tokens to a user's address.
     // Increases the user's balance and the total supply of pool tokens.
-    function _mint(address _to, uint _amount) private {
+    function _mint(address _to, uint256 _amount) private {
         balanceOf[_to] += _amount;
         totalSupply += _amount;
     }
 
     // Private function to burn liquidity pool tokens from a user's address.
     // Decreases the user's balance and the total supply of pool tokens.
-    function _burn(address _from, uint _amount) private {
+    function _burn(address _from, uint256 _amount) private {
         balanceOf[_from] -= _amount;
         totalSupply -= _amount;
     }
 
     // Private function to update the reserves of token0 and token1 in the pool.
-    function _update(uint _reserve0, uint _reserve1) private {
+    function _update(uint256 _reserve0, uint256 _reserve1) private {
         reserve0 = _reserve0;
         reserve1 = _reserve1;
     }
 
-    function swap(
-        address _tokenIn,
-        uint _amountIn
-    ) external returns (uint amountOut) {
+    function swap(address _tokenIn, uint256 _amountIn) external returns (uint256 amountOut) {
         // Ensure that the provided token address is either token0 or token1.
-        require(
-            _tokenIn == address(token0) || _tokenIn == address(token1),
-            "invalid token"
-        );
+        require(_tokenIn == address(token0) || _tokenIn == address(token1), "invalid token");
         // Check that the amount of tokens being swapped is greater than zero.
         require(_amountIn > 0, "amount in = 0");
 
@@ -65,26 +59,22 @@ contract LiquidityPool {
         (
             IERC20 tokenIn, // The token being swapped from (input token).
             IERC20 tokenOut, // The token being swapped to (output token).
-            uint reserveIn, // The current reserve of the input token in the pool.
-            uint reserveOut // The current reserve of the output token in the pool.
-        ) = isToken0
-                ? (token0, token1, reserve0, reserve1)
-                : (token1, token0, reserve1, reserve0);
+            uint256 reserveIn, // The current reserve of the input token in the pool.
+            uint256 reserveOut // The current reserve of the output token in the pool.
+        ) = isToken0 ? (token0, token1, reserve0, reserve1) : (token1, token0, reserve1, reserve0);
 
         // Transfer the input tokens from the caller (msg.sender) to the liquidity pool.
         tokenIn.transferFrom(msg.sender, address(this), _amountIn);
 
         // Apply a 0.3% fee to the input amount.
         // The fee is calculated as (input amount * 997) / 1000.
-        uint amountInWithFee = (_amountIn * 997) / 1000;
+        uint256 amountInWithFee = (_amountIn * 997) / 1000;
 
         // Calculate the output amount using the constant product formula (x * y = k)
         // amountOut (dy) is the amount of output tokens to be sent to the caller.
         // dy = y * dx / x + dx
         // This formula ensures that the product of the reserves remains constant after the swap.
-        amountOut =
-            (reserveOut * amountInWithFee) /
-            (reserveIn + amountInWithFee);
+        amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
 
         // Transfer the calculated output tokens to the caller.
         tokenOut.transfer(msg.sender, amountOut);
@@ -98,10 +88,7 @@ contract LiquidityPool {
 
     // External function for users to add liquidity to the pool.
     // Takes in amounts of token0 and token1, calculates how many pool tokens to mint, and updates the reserves.
-    function addLiquidity(
-        uint _amount0,
-        uint _amount1
-    ) external returns (uint shares) {
+    function addLiquidity(uint256 _amount0, uint256 _amount1) external returns (uint256 shares) {
         // Transfer tokens from the user to the pool.
         token0.transferFrom(msg.sender, address(this), _amount0);
         token1.transferFrom(msg.sender, address(this), _amount1);
@@ -121,37 +108,26 @@ contract LiquidityPool {
         } else {
             // This condition handles the case when the pool already contains liquidity and LP tokens
             // are already in circulation.
-            shares = _min(
-                (_amount0 * totalSupply) / reserve0,
-                (_amount1 * totalSupply) / reserve1
-            );
+            shares = _min((_amount0 * totalSupply) / reserve0, (_amount1 * totalSupply) / reserve1);
         }
         require(shares > 0, "shares = 0");
         _mint(msg.sender, shares);
 
         // Update the reserves in the pool.
-        _update(
-            token0.balanceOf(address(this)),
-            token1.balanceOf(address(this))
-        );
+        _update(token0.balanceOf(address(this)), token1.balanceOf(address(this)));
     }
 
     // External function for users to remove liquidity from the pool.
     // Calculates how many tokens to return based on the amount of pool tokens they want to burn.
-    function removeLiquidity(
-        uint _shares
-    ) external returns (uint amount0, uint amount1) {
+    function removeLiquidity(uint256 _shares) external returns (uint256 amount0, uint256 amount1) {
         // Get the current balance of token0 and token1 in the pool contract.
-        uint bal0 = token0.balanceOf(address(this));
-        uint bal1 = token1.balanceOf(address(this));
+        uint256 bal0 = token0.balanceOf(address(this));
+        uint256 bal1 = token1.balanceOf(address(this));
 
         // Calculate amount of each token to return based on the shares (liquidity pool tokens) being burned.
         amount0 = (_shares * bal0) / totalSupply;
         amount1 = (_shares * bal1) / totalSupply;
-        require(
-            amount0 > 0 && amount1 > 0,
-            "Liquidity of tokens must be greater than 0"
-        );
+        require(amount0 > 0 && amount1 > 0, "Liquidity of tokens must be greater than 0");
 
         // Burn the pool tokens from the user's balance and update the total supply.
         _burn(msg.sender, _shares);
@@ -168,10 +144,10 @@ contract LiquidityPool {
     // It is used in the addLiquidity function to calculate the number of shares a user will receive
     // when they add liquidity. It helps ensure that the liquidity provided is fairly represented by the LP tokens.
     // This is used in liquidity pools to calculate LP tokens in a way that balances both token types proportionally
-    function _sqrt(uint y) private pure returns (uint z) {
+    function _sqrt(uint256 y) private pure returns (uint256 z) {
         if (y > 3) {
             z = y;
-            uint x = y / 2 + 1;
+            uint256 x = y / 2 + 1;
             while (x < z) {
                 z = x;
                 x = (y / x + x) / 2;
@@ -184,7 +160,7 @@ contract LiquidityPool {
     // Private pure function to return the minimum of two values.
     // Used in liquidity calculations to ensure proportional distribution.
     // Chooses the smaller number when comparing two options.
-    function _min(uint x, uint y) private pure returns (uint) {
+    function _min(uint256 x, uint256 y) private pure returns (uint256) {
         return x <= y ? x : y;
     }
 }

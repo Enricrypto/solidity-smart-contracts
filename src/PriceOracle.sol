@@ -34,11 +34,7 @@ contract PriceOracle {
     }
 
     // Helper function to get reserves from the liquidity pool contract
-    function getReserves()
-        internal
-        view
-        returns (uint256 reserve0, uint256 reserve1)
-    {
+    function getReserves() internal view returns (uint256 reserve0, uint256 reserve1) {
         // Retrieve the reserves of token0 and token1 from the liquidity pool
         // reserve0() and reserve1() are called as functions because they are public state variables
         // in the LiquidityPool contract, and Solidity automatically generates getter functions for them

@@ -69,23 +69,13 @@ contract VaultTest is Test {
         vault.withdraw(withdrawAmount);
 
         assertEq(
-            depositToken.balanceOf(address(vault)),
-            initialVaultBalance,
-            "Vault balance incorrect after withdrawal"
+            depositToken.balanceOf(address(vault)), initialVaultBalance, "Vault balance incorrect after withdrawal"
         );
 
-        assertEq(
-            depositToken.balanceOf(sender),
-            initialSenderBalance,
-            "Sender balance incorrect after withdrawal"
-        );
+        assertEq(depositToken.balanceOf(sender), initialSenderBalance, "Sender balance incorrect after withdrawal");
 
         // It ensures that the tokens were successfully withdrawn from
         // the Vault and that the sender's Vault balance is now empty.
-        assertEq(
-            vault.balanceOf(sender),
-            0,
-            "Vault balanceOf sender incorrect after withdrawal"
-        );
+        assertEq(vault.balanceOf(sender), 0, "Vault balanceOf sender incorrect after withdrawal");
     }
 }

@@ -70,17 +70,11 @@ contract LiquidityPoolTest is Test {
         uint256 ownerInitialShares = pool.balanceOf(owner);
 
         // Ensure the owner has the correct amount of liquidity pool tokens
-        assertEq(
-            ownerInitialShares,
-            100 ether,
-            "Owner's initial shares are incorrect"
-        );
+        assertEq(ownerInitialShares, 100 ether, "Owner's initial shares are incorrect");
 
         // Calculate expected amounts of token0 and token1 to be received
-        uint256 expectedToken0Amount = (removeShares *
-            token0.balanceOf(address(pool))) / ownerInitialShares;
-        uint256 expectedToken1Amount = (removeShares *
-            token1.balanceOf(address(pool))) / ownerInitialShares;
+        uint256 expectedToken0Amount = (removeShares * token0.balanceOf(address(pool))) / ownerInitialShares;
+        uint256 expectedToken1Amount = (removeShares * token1.balanceOf(address(pool))) / ownerInitialShares;
 
         // Store the owner's initial token balances
         uint256 initialOwnerToken0Balance = token0.balanceOf(owner);
@@ -91,16 +85,8 @@ contract LiquidityPoolTest is Test {
         (uint256 amount0, uint256 amount1) = pool.removeLiquidity(removeShares);
 
         // Verify the returned amounts
-        assertEq(
-            amount0,
-            expectedToken0Amount,
-            "Returned Token 0 amount is incorrect"
-        );
-        assertEq(
-            amount1,
-            expectedToken1Amount,
-            "Returned Token 1 amount is incorrect"
-        );
+        assertEq(amount0, expectedToken0Amount, "Returned Token 0 amount is incorrect");
+        assertEq(amount1, expectedToken1Amount, "Returned Token 1 amount is incorrect");
 
         // Verify the owner's balances
         assertEq(
@@ -118,24 +104,12 @@ contract LiquidityPoolTest is Test {
         uint256 newReserve0 = pool.reserve0();
         uint256 newReserve1 = pool.reserve1();
 
-        assertEq(
-            newReserve0,
-            100 ether - expectedToken0Amount,
-            "Reserve of Token 0 is not correct"
-        );
-        assertEq(
-            newReserve1,
-            100 ether - expectedToken1Amount,
-            "Reserve of Token 1 is not correct"
-        );
+        assertEq(newReserve0, 100 ether - expectedToken0Amount, "Reserve of Token 0 is not correct");
+        assertEq(newReserve1, 100 ether - expectedToken1Amount, "Reserve of Token 1 is not correct");
 
         // Verify the owner's remaining pool balance
         uint256 expectedRemainingShares = ownerInitialShares - removeShares;
-        assertEq(
-            pool.balanceOf(owner),
-            expectedRemainingShares,
-            "Owner's remaining pool balance is incorrect"
-        );
+        assertEq(pool.balanceOf(owner), expectedRemainingShares, "Owner's remaining pool balance is incorrect");
     }
 
     function testSwap() public {
@@ -153,27 +127,13 @@ contract LiquidityPoolTest is Test {
 
         // User's token0 balance should decrease by amountToWithdraw
         assertEq(
-            token0.balanceOf(user),
-            initialUserToken0Balance - amountToWithdraw,
-            "Balance of token 0 is not correct"
+            token0.balanceOf(user), initialUserToken0Balance - amountToWithdraw, "Balance of token 0 is not correct"
         );
 
         // User's token1 balance should increase by amountOut
-        assertEq(
-            token1.balanceOf(user),
-            initialUserToken1Balance + amountOut,
-            "Balance of token 1 is not correct"
-        );
-        assertEq(
-            pool.reserve0(),
-            110 ether,
-            "Reserve of token 0 is not correct"
-        );
-        assertEq(
-            pool.reserve1(),
-            100 ether - amountOut,
-            "Reserve of token 1 is not correct"
-        );
+        assertEq(token1.balanceOf(user), initialUserToken1Balance + amountOut, "Balance of token 1 is not correct");
+        assertEq(pool.reserve0(), 110 ether, "Reserve of token 0 is not correct");
+        assertEq(pool.reserve1(), 100 ether - amountOut, "Reserve of token 1 is not correct");
     }
 
     // Helper function to add initial liquidity to the pool
