@@ -184,6 +184,8 @@ Build a Basic lending market.
 3. A user should be able to borrow up to an equal value to their Collateral (100$ Collateral = 100$ loan) ✅
 4. Have a Liquidation function that anyone can call to repay the loan value of a user once the Collateral value of that user falls below their loan value. (If a user borrowed 100$ and Collateral is now 99$ the Liquidator would Transfer 100$ of the loan in and receive the Collateral of the user. Currently that function makes no economic sense but we will build upon it in the future) ✅
 
-1) LTV ratio, liquidation penalty, fixed interest rate 
+1) LTV ratio ✅  How can I calculate the LTV ratio based on market conditions and updated using the price Oracle? 
+2) liquidation penalty ✅
+3) fixed interest rate ✅ accruedInterest fucntion and BorrowInfo struct to calculate borrowed amount, interested accrued and time of interest
 
-2) mint token lending market / claim interest payments , interest rate based on utilization
+4) mint token lending market / claim interest payments , interest rate based on utilization

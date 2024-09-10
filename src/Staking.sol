@@ -158,7 +158,7 @@ contract Staking is Vault {
             return 0;
         }
         uint256 stakingDuration = block.timestamp - user.lastClaimTime;
-        uint256 pending = user.shares * stakingDuration;
+        uint256 pending = (user.shares * stakingDuration) / 1e18;
         return pending;
     }
 
