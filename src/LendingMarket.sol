@@ -63,12 +63,17 @@ contract LendingMarket {
 
     // Function to adjust the LTV ratio, restricted to the owner
     function setLTVRatio(uint256 _ltvRatio) external onlyAdmin {
-        require(_ltvRatio > 0 && _ltvRatio <= 1e18, "LTV ratio must be between 0 and 1e18 (100%)");
+        require(
+            _ltvRatio > 0 && _ltvRatio <= 1e18,
+            "LTV ratio must be between 0 and 1e18 (100%)"
+        );
         ltvRatio = _ltvRatio;
     }
 
     // Function to adjust the liquidation penalty, restricted to the owner
-    function setLiquidationPenalty(uint256 _liquidationPenalty) external onlyAdmin {
+    function setLiquidationPenalty(
+        uint256 _liquidationPenalty
+    ) external onlyAdmin {
         require(
             _liquidationPenalty > 0 && _liquidationPenalty <= 1e18,
             "Liquidation Penalty must be between 0 and 1e18 (100%)"
@@ -78,7 +83,10 @@ contract LendingMarket {
 
     // Function to adjust the interest rate, restricted to the owner
     function setInterestRate(uint256 _interestRate) external onlyAdmin {
-        require(_interestRate > 0 && _interestRate <= 1e18, "Interest rate must be between 0 and 1e18 (100%)");
+        require(
+            _interestRate > 0 && _interestRate <= 1e18,
+            "Interest rate must be between 0 and 1e18 (100%)"
+        );
         interestRate = _interestRate;
     }
 
@@ -92,7 +100,9 @@ contract LendingMarket {
             uint256 timeElapsed = block.timestamp - info.lastBorrowTimestamp;
 
             // Calculate the interest accrued per second
-            uint256 interest = (info.borrowedAmount * interestRate * timeElapsed) / 1e18;
+            uint256 interest = (info.borrowedAmount *
+                interestRate *
+                timeElapsed) / 1e18;
 
             // Update the borrowed amount in the user's borrow info
             info.borrowedAmount += interest;
@@ -116,14 +126,20 @@ contract LendingMarket {
         _accrueInterest(msg.sender);
 
         // Get the price of the collateral token in terms of the lending token
-        uint256 collateralPrice = priceOracle.getPrice(address(collateralToken));
+        uint256 collateralPrice = priceOracle.getPrice(
+            address(collateralToken)
+        );
 
         // Calculate the maximum borrowable amount based on the LTV ratio
-        uint256 collateralValueInLendingToken = ((collateralBalance[msg.sender] * collateralPrice) / 1e18);
-        uint256 maxBorrowableAmount = (collateralValueInLendingToken * ltvRatio) / 1e18;
+        uint256 collateralValueInLendingToken = ((collateralBalance[
+            msg.sender
+        ] * collateralPrice) / 1e18);
+        uint256 maxBorrowableAmount = (collateralValueInLendingToken *
+            ltvRatio) / 1e18;
 
         require(
-            borrowInfo[msg.sender].borrowedAmount + _amount <= maxBorrowableAmount,
+            borrowInfo[msg.sender].borrowedAmount + _amount <=
+                maxBorrowableAmount,
             "Borrow amount exceeds collateralized value"
         );
 
@@ -167,15 +183,20 @@ contract LendingMarket {
         _accrueInterest(msg.sender);
 
         // Get the price of the collateral token in terms of the lending token
-        uint256 collateralPrice = priceOracle.getPrice(address(collateralToken));
+        uint256 collateralPrice = priceOracle.getPrice(
+            address(collateralToken)
+        );
 
         // Calculate the value of the remaining collateral after withdrawal
-        uint256 remainingCollateralValue = ((collateralBalance[msg.sender] - _amount) * collateralPrice) / 1e18;
+        uint256 remainingCollateralValue = ((collateralBalance[msg.sender] -
+            _amount) * collateralPrice) / 1e18;
 
         // Calculate the maximum allowable borrowed balance based on the LTV ratio
-        uint256 maxBorrowableAmountAfterWithdrawal = (remainingCollateralValue * ltvRatio) / 1e18;
+        uint256 maxBorrowableAmountAfterWithdrawal = (remainingCollateralValue *
+            ltvRatio) / 1e18;
         require(
-            borrowInfo[msg.sender].borrowedAmount <= maxBorrowableAmountAfterWithdrawal,
+            borrowInfo[msg.sender].borrowedAmount <=
+                maxBorrowableAmountAfterWithdrawal,
             "Cannot withdraw more collateral"
         );
 
@@ -195,13 +216,17 @@ contract LendingMarket {
         uint256 totalDebt = borrowInfo[_user].borrowedAmount + accruedInterest;
 
         // Retrieve the collateral price
-        uint256 collateralPrice = priceOracle.getPrice(address(collateralToken));
+        uint256 collateralPrice = priceOracle.getPrice(
+            address(collateralToken)
+        );
 
         // Calculate the value of the collateral in terms of the lending token
-        uint256 collateralValueInLendingToken = (collateralBalance[_user] * collateralPrice) / 1e18;
+        uint256 collateralValueInLendingToken = (collateralBalance[_user] *
+            collateralPrice) / 1e18;
 
         // Calculate the maximum borrowable amount based on the LTV ratio
-        uint256 maxBorrowableAmount = (collateralValueInLendingToken * ltvRatio) / 1e18;
+        uint256 maxBorrowableAmount = (collateralValueInLendingToken *
+            ltvRatio) / 1e18;
 
         // Return the maximum amount that can still be borrowed
         return maxBorrowableAmount - totalDebt;
@@ -215,16 +240,23 @@ contract LendingMarket {
         uint256 totalDebt = borrowInfo[_user].borrowedAmount + accruedInterest;
 
         // Retrieve the price of the collateral token relative to the lending token
-        uint256 collateralPrice = priceOracle.getPrice(address(collateralToken));
+        uint256 collateralPrice = priceOracle.getPrice(
+            address(collateralToken)
+        );
 
         // Calculate the current value of the user's collateral in terms of the lending token
-        uint256 collateralValueInLendingToken = (collateralBalance[_user] * collateralPrice) / 1e18;
+        uint256 collateralValueInLendingToken = (collateralBalance[_user] *
+            collateralPrice) / 1e18;
 
         // Calculate the maximum allowable borrowed balance based on the LTV ratio
-        uint256 maxBorrowableAmount = (collateralValueInLendingToken * ltvRatio) / 1e18;
+        uint256 maxBorrowableAmount = (collateralValueInLendingToken *
+            ltvRatio) / 1e18;
 
         // Check if the user's borrowed amount exceeds the maximum borrowable amount
-        require(totalDebt > maxBorrowableAmount, "User's collateral is sufficient");
+        require(
+            totalDebt > maxBorrowableAmount,
+            "User's collateral is sufficient"
+        );
 
         // Get the amount the liquidator needs to repay, which is the user's total debt
         uint256 repaymentAmount = totalDebt;
@@ -234,7 +266,8 @@ contract LendingMarket {
         lendingToken.transferFrom(msg.sender, address(this), repaymentAmount);
 
         // Calculate the liquidation penalty
-        uint256 penaltyAmount = (collateralBalance[_user] * liquidationPenalty) / 1e18;
+        uint256 penaltyAmount = (collateralBalance[_user] *
+            liquidationPenalty) / 1e18;
 
         // Calculate the remaining collateral after applying the penalty
         uint256 remainingCollateral = collateralBalance[_user] - penaltyAmount;

@@ -9,6 +9,9 @@ contract Staking is Vault {
     // instance of the DepositToken contract
     DepositToken public rewardsToken;
 
+    // variable for reward rate
+    uint256 public rewardRatePerSecond = 1e18 / 1e18; // 1 token per second, scaled by 1e18
+
     //a struct with shares and deposit time variables to calculate rewards accurately
     struct UserInfo {
         uint256 shares; // Amount of shares the user has
@@ -33,7 +36,10 @@ contract Staking is Vault {
     function depositVault(uint256 _amount) public returns (bool success) {
         require(_amount > 0, "Amount must be greater than zero");
 
-        require(depositToken.balanceOf(msg.sender) >= _amount, "Insufficient funds");
+        require(
+            depositToken.balanceOf(msg.sender) >= _amount,
+            "Insufficient funds"
+        );
 
         // variable "user" of type UserInfo (struct) is being set equal to the address calling the function
         UserInfo storage user = userInfo[msg.sender];
@@ -115,7 +121,10 @@ contract Staking is Vault {
 
     // function allows a user (msg.sender) to transfer their vault shares (_amount)
     // to another address (_to)
-    function transferShares(address _to, uint256 _amount) public returns (bool success) {
+    function transferShares(
+        address _to,
+        uint256 _amount
+    ) public returns (bool success) {
         UserInfo storage sender = userInfo[msg.sender];
         require(sender.shares >= _amount, "Insufficient shares to transfer");
 
@@ -143,14 +152,18 @@ contract Staking is Vault {
 
     // function to calculate the total pending rewards accrued by the user since their
     // last claim.
-    function _calculatePendingRewards(UserInfo storage user) internal view returns (uint256) {
+    function _calculatePendingRewards(
+        UserInfo storage user
+    ) internal view returns (uint256) {
         // it's a view function as it doesn't modify the state, it only reads from it
         // Checks if the user has never claimed rewards.
         if (user.lastClaimTime == 0) {
             return 0;
         }
         uint256 stakingDuration = block.timestamp - user.lastClaimTime;
-        uint256 pending = (user.shares * stakingDuration) / 1e18;
+        uint256 pending = (user.shares *
+            stakingDuration *
+            rewardRatePerSecond) / 1e18;
         return pending;
     }
 
