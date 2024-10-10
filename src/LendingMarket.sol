@@ -4,11 +4,12 @@ pragma solidity ^0.8.0;
 import "./PriceOracle.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+// This contract supports operations for two sepcific tokens
 contract LendingMarket {
     // declare both tokens as state variables
     IERC20 public lendingToken; // used for borrowing and repayment
     IERC20 public collateralToken; // used for collateral purposes
-    PriceOracle public priceOracle;
+    PriceOracle public priceOracle; // PriceOracle contract imported to fetch the price of the collateral token relative to the lending token.
 
     // address of the contract admin
     address public admin;
